@@ -577,47 +577,49 @@ class Game {
 
   draw(c) {
     c.fillStyle='#0a0a1a'; c.fillRect(0,0,W,H);
-
-    // Parallax stars with shake offset
     c.save();
-    c.translate(shakeX, shakeY);
-    drawStars(this.starDy);
+    try {
+      // Parallax stars with shake offset
+      c.translate(shakeX, shakeY);
+      drawStars(this.starDy);
 
-    // Particles
-    this.particles.forEach(p=>p.draw(c));
-    // Powerups
-    this.powerups.forEach(p=>p.draw(c));
-    // Text popups
-    this.textPopups.forEach(t=>t.draw(c));
-    // Bullets
-    this.bullets.forEach(b=>b.draw(c));
-    // Asteroids
-    this.asteroids.forEach(a=>a.draw(c));
-    // Ship
-    this.ship.draw(c);
+      // Particles
+      this.particles.forEach(p=>p.draw(c));
+      // Powerups
+      this.powerups.forEach(p=>p.draw(c));
+      // Text popups
+      this.textPopups.forEach(t=>t.draw(c));
+      // Bullets
+      this.bullets.forEach(b=>b.draw(c));
+      // Asteroids
+      this.asteroids.forEach(a=>a.draw(c));
+      // Ship
+      this.ship.draw(c);
 
-    // Active powerup indicators
-    let py=35;
-    c.font='12px monospace'; c.textAlign='right';
-    const pwr=[];
-    if (this.rapidTimer>0) pwr.push({label:'RAPID',color:'#ff0',time:this.rapidTimer});
-    if (this.shieldTimer>0) pwr.push({label:'SHIELD',color:'#4af',time:this.shieldTimer});
-    if (this.spreadTimer>0) pwr.push({label:'SPREAD',color:'#f84',time:this.spreadTimer});
-    pwr.forEach(p=>{
-      c.fillStyle=p.color; c.globalAlpha=0.5+0.3*Math.sin(Date.now()/150);
-      c.fillText(p.label+' '+Math.ceil(p.time/60)+'s', W-15, py);
-      c.globalAlpha=1; py+=16;
-    });
-    c.textAlign='start';
+      // Active powerup indicators
+      let py=35;
+      c.font='12px monospace'; c.textAlign='right';
+      const pwr=[];
+      if (this.rapidTimer>0) pwr.push({label:'RAPID',color:'#ff0',time:this.rapidTimer});
+      if (this.shieldTimer>0) pwr.push({label:'SHIELD',color:'#4af',time:this.shieldTimer});
+      if (this.spreadTimer>0) pwr.push({label:'SPREAD',color:'#f84',time:this.spreadTimer});
+      pwr.forEach(p=>{
+        c.fillStyle=p.color; c.globalAlpha=0.5+0.3*Math.sin(Date.now()/150);
+        c.fillText(p.label+' '+Math.ceil(p.time/60)+'s', W-15, py);
+        c.globalAlpha=1; py+=16;
+      });
+      c.textAlign='start';
 
-    // Level
-    c.fillStyle='rgba(255,255,255,0.15)'; c.font='12px monospace';
-    c.fillText('LVL '+this.level, 15, H-15);
-    if (this.combo>1) {
-      c.fillStyle='#ff8'; c.font='14px monospace'; c.textAlign='center';
-      c.fillText('x'+this.combo.toFixed(1), W/2, 40); c.textAlign='start';
+      // Level
+      c.fillStyle='rgba(255,255,255,0.15)'; c.font='12px monospace';
+      c.fillText('LVL '+this.level, 15, H-15);
+      if (this.combo>1) {
+        c.fillStyle='#ff8'; c.font='14px monospace'; c.textAlign='center';
+        c.fillText('x'+this.combo.toFixed(1), W/2, 40); c.textAlign='start';
+      }
+    } finally {
+      c.restore();
     }
-    c.restore();
   }
 }
 
