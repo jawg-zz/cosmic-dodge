@@ -420,6 +420,7 @@ function updateUI() {
 }
 
 function gameLoop() {
+  requestAnimationFrame(gameLoop);
   if (!game) return;
   if (!game.dead) {
     game.update();
@@ -436,7 +437,6 @@ function gameLoop() {
     `;
     document.getElementById('restartBtn').onclick = startGame;
   }
-  requestAnimationFrame(gameLoop);
 }
 
 function startGame() {
