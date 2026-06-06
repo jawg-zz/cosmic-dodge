@@ -124,6 +124,7 @@ canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
 // Game state
 let game = null;
 let keys = {};
+let gameOverDisplayed = false;
 
 // Stars background
 const stars = Array.from({length: 150}, () => ({
@@ -426,16 +427,20 @@ function gameLoop() {
     game.update();
     game.draw(ctx);
     updateUI();
+    gameOverDisplayed = false;
   } else {
-    game.draw(ctx);
-    overlay.classList.remove('hidden');
-    overlay.innerHTML = `
-      <h1>GAME OVER</h1>
-      <div class="final-score">Score: ${game.score} &bull; Level: ${game.level}</div>
-      <button id="restartBtn">&#9654; PLAY AGAIN</button>
-      <div class="controls">Arrow Keys / WASD &mdash; Move &bull; Space &mdash; Shoot</div>
-    `;
-    document.getElementById('restartBtn').onclick = startGame;
+    if (!gameOverDisplayed) {
+      game.draw(ctx);
+      overlay.classList.remove('hidden');
+      overlay.innerHTML = `
+        <h1>GAME OVER</h1>
+        <div class="final-score">Score: ${game.score} &bull; Level: ${game.level}</div>
+        <button id="restartBtn">&#9654; PLAY AGAIN</button>
+        <div class="controls">Arrow Keys / WASD &mdash; Move &bull; Space &mdash; Shoot</div>
+      `;
+      document.getElementById('restartBtn').onclick = startGame;
+      gameOverDisplayed = true;
+    }
   }
 }
 
