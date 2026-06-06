@@ -665,8 +665,27 @@ function gameLoop() {
 
 function startGame() {
   initAudio();
+  // Reset held keys so they don't carry over from previous game
+  Object.keys(keys).forEach(k=>keys[k]=false);
+  // Reset star positions to prevent drift across sessions
+  starLayers.forEach(layer=>layer.forEach(s=>{s.x=Math.random()*W; s.y=Math.random()*H;}));
   game=new Game();
   overlay.classList.add('hidden');
+  // Recreate start screen overlay so hiDisplay and startBtn exist in DOM
+  overlay.innerHTML=`
+    <h1>&#9733; COSMIC DODGE &#9733;</h1>
+    <div class="sub">Navigate the asteroid field</div>
+    <div class="best-score" id="hiDisplay"></div>
+    <button id="startBtn">&#9654; PLAY</button>
+    <div class="controls">Move: WASD / Arrows &bull; Shoot: Space / F</div>
+    <div class="legend">
+      <span style="color:#f44">&#9829; Extra Life</span>
+      <span style="color:#ff0">&#9889; Rapid Fire</span>
+      <span style="color:#4af">&#9724; Shield</span>
+      <span style="color:#f84">&#9884; Spread</span>
+    </div>
+  `;
+  document.getElementById('startBtn').onclick=function(){initAudio(); startGame();};
   showHigh();
 }
 
@@ -681,10 +700,8 @@ startBtn.onclick=function(){initAudio(); startGame();};
 function resize(){
   const maxW=window.innerWidth-20, maxH=window.innerHeight-20;
   const scale=Math.min(1, maxW/W, maxH/H);
-  canvas.style.width=(W*scale)+'px'; canvas.style.height=(H*scale)+'px';
   const gc=document.getElementById('gameContainer');
   gc.style.transform='scale('+scale+')'; gc.style.transformOrigin='top left';
-  canvas.style.width=W+'px'; canvas.style.height=H+'px';
 }
 window.addEventListener('resize',resize); resize();
 
