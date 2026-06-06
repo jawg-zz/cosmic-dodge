@@ -89,14 +89,21 @@ let game = null, keys = {}, gameOverDisplayed = false;
 
 // ── Audio ──────────────────────────────────────────────
 let audioCtx = null;
-function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+function initAudio() {
+  if (audioCtx) return;
+  try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+}
 function play(type) {
+  if (!audioCtx) return;
   try {
-    initAudio(); if (!audioCtx) return;
+    const t = audioCtx.currentTime;
+    // If context is suspended, resume on next user gesture instead
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume().catch(()=>{});
+    }
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.connect(gain); gain.connect(audioCtx.destination);
-    const t = audioCtx.currentTime;
     switch (type) {
       case 'shoot':
         osc.frequency.setValueAtTime(800, t);
@@ -626,31 +633,34 @@ function updateUI() {
 // ── Game Loop ─────────────────────────────────────────
 function gameLoop() {
   requestAnimationFrame(gameLoop);
-  if (!game) return;
-  if (!game.dead) {
-    game.update();
-    game.draw(ctx);
-    updateUI();
-    gameOverDisplayed=false;
-  } else {
-    if (!gameOverDisplayed) {
+  try {
+    if (!game) return;
+    if (!game.dead) {
+      game.update();
       game.draw(ctx);
-      const isNew=setHigh(game.score);
-      overlay.classList.remove('hidden');
-      overlay.innerHTML=`
-        <h1>GAME OVER</h1>
-        <div class="final-score">Score: ${game.score}</div>
-        <div class="best-score">${isNew?'&#9733; NEW BEST! &#9733;':'Best: '+getHigh()}</div>
-        <button id="restartBtn">&#9654; PLAY AGAIN</button>
-        <div class="controls">Move: WASD / Arrows &bull; Shoot: Space / F</div>
-      `;
-      document.getElementById('restartBtn').onclick=startGame;
-      gameOverDisplayed=true;
+      updateUI();
+      gameOverDisplayed=false;
+    } else {
+      if (!gameOverDisplayed) {
+        game.draw(ctx);
+        const isNew=setHigh(game.score);
+        overlay.classList.remove('hidden');
+        overlay.innerHTML=`
+          <h1>GAME OVER</h1>
+          <div class="final-score">Score: ${game.score}</div>
+          <div class="best-score">${isNew?'&#9733; NEW BEST! &#9733;':'Best: '+getHigh()}</div>
+          <button id="restartBtn">&#9654; PLAY AGAIN</button>
+          <div class="controls">Move: WASD / Arrows &bull; Shoot: Space / F</div>
+        `;
+        document.getElementById('restartBtn').onclick=startGame;
+        gameOverDisplayed=true;
+      }
     }
-  }
+  } catch(e) { console.warn('Cosmic Dodge loop:', e); }
 }
 
 function startGame() {
+  initAudio();
   game=new Game();
   overlay.classList.add('hidden');
   showHigh();
@@ -662,7 +672,7 @@ document.addEventListener('keydown',e=>{
   if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
 });
 document.addEventListener('keyup',e=>{keys[e.code]=false;});
-startBtn.onclick=startGame;
+startBtn.onclick=function(){initAudio(); startGame();};
 
 function resize(){
   const maxW=window.innerWidth-20, maxH=window.innerHeight-20;
